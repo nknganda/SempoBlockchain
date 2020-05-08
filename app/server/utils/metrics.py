@@ -137,7 +137,7 @@ def calculate_transfer_stats(total_time_series=False, start_date=None, end_date=
 
     try:
         disbursement_vol_list = [
-            {'date': item[1].isoformat(), 'volume': item[0]} for item in daily_disbursement_volume
+            {'date': item[1], 'volume': item[0]} for item in daily_disbursement_volume
         ]
     except IndexError:
         disbursement_vol_list = [{'date': datetime.datetime.utcnow().isoformat(), 'volume': 0}]

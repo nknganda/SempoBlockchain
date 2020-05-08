@@ -1,9 +1,10 @@
 from datetime import datetime, timedelta
+from flask import current_app
 
 from server import red, db
 from flask import g
 from decimal import Decimal
-import json
+import orjson
 import pickle
 
 SUM = 'SUM'
@@ -13,8 +14,13 @@ COUNT ='COUNT'
 
 valid_strategies = [SUM, TIMESERIES, COUNT, SUM_OBJECTS]
 
+def defaultDecimal(obj):
+    if isinstance(obj, Decimal):
+        return str(obj)
+    raise TypeError
+
 def _store_cache(key, value):
-    pickled_object = json.dumps(value)
+    pickled_object = orjson.dumps(valuez)
     red.set(key, pickled_object)
     return True
 
@@ -23,7 +29,7 @@ def _load_cache(key):
     if not cached_object:
         return None
     try:
-        return json.loads(cached_object)
+        return orjson.loads(cached_object)
     except (pickle.UnpicklingError, UnicodeDecodeError):
         red.delete(key)
         return None
