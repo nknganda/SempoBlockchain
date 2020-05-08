@@ -14,7 +14,7 @@ COUNT ='COUNT'
 valid_strategies = [SUM, TIMESERIES, COUNT, SUM_OBJECTS]
 
 def _store_cache(key, value):
-    pickled_object = pickle.dumps(value)
+    pickled_object = json.dumps(value)
     red.set(key, pickled_object)
     return True
 
@@ -22,7 +22,11 @@ def _load_cache(key):
     cached_object = red.get(key)
     if not cached_object:
         return None
-    return pickle.loads(cached_object)       
+    try:
+        return json.loads(cached_object)
+    except (pickle.UnpicklingError, UnicodeDecodeError):
+        red.delete(key)
+        return None
 
 def execute_with_partial_history_cache(metric_name, query, object_model, strategy, disable_cache = False):
     # disable_cache pass-thru. This is so we don't cache data when filters are active.
