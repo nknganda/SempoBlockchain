@@ -133,8 +133,7 @@ def register_blueprints(app):
 
         for task in g.celery_tasks:
             try:
-                # TODO: Standardize this task (pipe through execute_synchronous_celery)
-                task.delay()
+                task()
             except Exception as e:
                 sentry_sdk.capture_exception(e)
 

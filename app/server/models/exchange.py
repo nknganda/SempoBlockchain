@@ -2,7 +2,7 @@ from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.orm.attributes import flag_modified
 
 from functools import partial
-from flask import current_app
+from flask import current_app, g
 
 from server import db, bt
 
@@ -222,15 +222,24 @@ class Exchange(BlockchainTaskableBase):
 
         self.exchange_rate = to_amount/from_amount
 
-        task_uuid = bt.make_liquid_token_exchange(
+        from uuid import uuid4
+        task_uuid = str(uuid4())
+        self.blockchain_task_uuid = task_uuid
+        self.from_transfer.blockchain_task_uuid = task_uuid
+        self.to_transfer.blockchain_task_uuid = task_uuid
+
+        executable_task = bt.make_liquid_token_exchange(
             signing_address=signing_address,
             exchange_contract=exchange_contract,
             from_token=from_token,
             to_token=to_token,
             reserve_token=exchange_contract.reserve_token,
             from_amount=from_amount,
-            prior_tasks=[to_approval_uuid, reserve_approval_uuid, from_approval_uuid] + (prior_task_uuids or [])
+            prior_tasks=[to_approval_uuid, reserve_approval_uuid, from_approval_uuid] + (prior_task_uuids or []),
+            task_uuid=task_uuid
         )
+
+        g.celery_tasks.append(executable_task)
 
         self.to_transfer = server.models.credit_transfer.CreditTransfer(
             to_amount,
@@ -242,9 +251,7 @@ class Exchange(BlockchainTaskableBase):
 
         db.session.add(self.to_transfer)
 
-        self.blockchain_task_uuid = task_uuid
-        self.from_transfer.blockchain_task_uuid = task_uuid
-        self.to_transfer.blockchain_task_uuid = task_uuid
+
 
         self.from_transfer.resolve_as_completed(existing_blockchain_txn=True)
         self.to_transfer.resolve_as_completed(existing_blockchain_txn=True)

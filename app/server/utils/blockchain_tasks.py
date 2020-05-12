@@ -54,6 +54,26 @@ class BlockchainTasker(object):
                           queue=None,
                           task_uuid=None
                           ):
+        return self._construct_transaction_task(
+            signing_address,
+            contract_address, contract_type,
+            func, args,
+            gas_limit,
+            prior_tasks,
+            queue,
+            task_uuid
+        )()
+
+    def _construct_transaction_task(
+            self,
+            signing_address,
+            contract_address, contract_type,
+            func, args=None,
+            gas_limit=None,
+            prior_tasks=None,
+            queue=None,
+            task_uuid=None):
+
         kwargs = {
             'signing_address': signing_address,
             'contract_address': contract_address,
@@ -63,10 +83,15 @@ class BlockchainTasker(object):
             'gas_limit': gas_limit,
             'prior_tasks': prior_tasks
         }
-        return task_runner.delay_task(
+
+        def executable():
+            return task_runner.delay_task(
             self._eth_endpoint('transact_with_contract_function'),
-            kwargs=kwargs, queue=queue, task_uuid=task_uuid
-        ).id
+            kwargs=kwargs, queue=queue, task_uuid=task_uuid).id
+
+        return executable
+
+
 
     def get_blockchain_task(self, task_uuid):
         """
@@ -250,7 +275,8 @@ class BlockchainTasker(object):
                                    to_token,
                                    reserve_token,
                                    from_amount,
-                                   prior_tasks=None):
+                                   prior_tasks=None,
+                                   task_uuid=None):
         """
         Uses a Liquid Token Contract network to exchange between two ERC20 smart tokens.
         :param signing_address: address of wallet signing txn
@@ -272,7 +298,7 @@ class BlockchainTasker(object):
         # if topup_task_uuid:
         #     prior_tasks.append(topup_task_uuid)
 
-        return self._transaction_task(
+        return self._construct_transaction_task(
             signing_address=signing_address,
             contract_address=exchange_contract.blockchain_address,
             contract_type='bancor_converter',
@@ -282,7 +308,8 @@ class BlockchainTasker(object):
                 from_token.system_amount_to_token(from_amount),
                 1
             ],
-            prior_tasks=prior_tasks
+            prior_tasks=prior_tasks,
+            task_uuid=task_uuid
         )
 
     def get_conversion_amount(self, exchange_contract, from_token, to_token, from_amount, signing_address=None):
