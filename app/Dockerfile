@@ -18,7 +18,8 @@ RUN apt remove --purge -y gcc g++ libffi-dev libstdc++-6-dev python3-dev musl-de
 
 COPY ./config.py /src/
 RUN mkdir /src/config_files
-COPY ./config_files/* /src/config_files/
+COPY ./config_files/public /src/config_files/public
+COPY ./config_files/secret /src/config_files/secret
 COPY ./app/server /src/server
 COPY ./app/migrations /src/migrations
 COPY ./app/manage.py /src
