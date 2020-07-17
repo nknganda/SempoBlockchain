@@ -75,26 +75,29 @@ def synchronize_third_party_transactions():
 # Gets history for given range, and runs handle_transaction on all of them
 # This is the second stage in the third party transaction processing pipeline!
 def process_chunk(filter, floor, ceiling):
-    transaction_history = get_blockchain_transaction_history(
+    events = get_blockchain_transaction_history(
             filter.contract_address, 
             floor, 
             ceiling, 
             filter.filter_parameters,
             filter.id
         )
-    for transaction in transaction_history:
-        handle_transaction(transaction, filter)
+    for event in events:
+        handle_event(event, filter)
 
 # Processes newly found transaction event
 # Creates database object for transaction
 # Calls webhook
 # Sets sync status (whether or not webhook was successful)
 # Fallback if something goes wrong at this level: `is_synchronized_with_app` flag. Can batch unsynced stuff
-def handle_transaction(transaction, filter):
-    # Check if transaction already exists (I.e. already synchronized, or first party transactions)
-    transaction_object = persistence_module.get_transaction(hash=transaction.transactionHash.hex())
+def handle_event(event, filter):
+
+    # Check if transaction event already exists (I.e. already synchronized, or first party transactions)
+    transaction_object = persistence_module.get_transaction(hash=event.transactionHash.hex())
+
     if transaction_object and transaction_object.is_synchronized_with_app:
         return True
+
     if not transaction_object:
         transaction_object = persistence_module.create_external_transaction(
             status = 'SUCCESS',
@@ -116,7 +119,13 @@ def handle_transaction(transaction, filter):
 
 # Gets blockchain transaction history for given range
 # Fallback if something goes wrong at this level: block-tracking table
-def get_blockchain_transaction_history(contract_address, start_block, end_block = 'lastest', argument_filters = None, filter_id = None):
+def get_blockchain_transaction_history(
+        contract_address,
+        start_block,
+        end_block = 'lastest',
+        argument_filters = None,
+        filter_id = None):
+
     # Creates DB objects for every block to monitor status
     config.logg.info(f'Fetching block range {start_block} to {end_block} for contract {contract_address}')
 

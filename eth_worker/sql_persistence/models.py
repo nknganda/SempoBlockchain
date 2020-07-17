@@ -237,7 +237,6 @@ class BlockchainTransaction(ModelBase):
     sender_address = Column(String)
     recipient_address = Column(String)
     amount = Column(Numeric(27))
-    is_synchronized_with_app = Column(Boolean, default=False)
     is_third_party_transaction = Column(Boolean, default=False)
 
     ignore = Column(Boolean, default=False)
@@ -249,6 +248,8 @@ class BlockchainTransaction(ModelBase):
     blockchain_task_id = Column(Integer, ForeignKey(BlockchainTask.id))
 
     blockchain_task = relationship('BlockchainTask', foreign_keys=[blockchain_task_id])
+
+    events = relationship('BlockchainEvent', backref='transaction', lazy=True)
 
     @hybrid_property
     def status(self):
@@ -278,6 +279,14 @@ class BlockchainTransaction(ModelBase):
     def __repr__(self):
         return ('<BlockchainTransaction ID:{} Nonce:{} Status: {}>'
                 .format(self.id, self.nonce, self.status))
+
+class BlockchainEvent(ModelBase):
+    __tablename__ = 'blockchain_event'
+
+    name = Column(String)
+    args = Column(JSON)
+    log_index = Column(Integer)
+    is_synchronized_with_app = Column(Boolean, default=False)
     
 class SynchronizedBlock(ModelBase):
     __tablename__ = 'synchronized_block'
@@ -288,6 +297,11 @@ class SynchronizedBlock(ModelBase):
     synchronization_filter = relationship("SynchronizationFilter", back_populates="blocks", lazy=True)
     decimals = Column(Integer)
 
+    transactions = relationship('BlockchainTransaction', backref='synchronized_block', lazy=True)
+
+    events = relationship('BlockchainEvent', backref='synchronized_block', lazy=True)
+
+
 class SynchronizationFilter(ModelBase):
     __tablename__ = 'synchronization_filter'
     contract_address = Column(String, unique=True)
@@ -297,6 +311,9 @@ class SynchronizationFilter(ModelBase):
     max_block = Column(Integer)
     decimals = Column(Integer)
     blocks = relationship("SynchronizedBlock", back_populates="synchronization_filter", lazy=True)
+
+    events = relationship('BlockchainEvent', backref='filter', lazy=True)
+
 
 # When BlockchainTransaction is updated, let the api layer know about it
 @event.listens_for(BlockchainTransaction, 'after_update')

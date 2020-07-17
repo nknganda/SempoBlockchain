@@ -168,12 +168,17 @@ class SQLPersistenceInterface(object):
 
         return blockchain_transaction
 
-    # Gets transaction using transaction_id OR hash
-    def get_transaction(self, transaction_id = None, hash = None):
-        if transaction_id:
-            return self.session.query(BlockchainTransaction).get(transaction_id)
-        else:
-            return self.session.query(BlockchainTransaction).filter_by(hash=hash).first()
+    # Gets transaction using transaction_id
+    def get_transaction(self, transaction_id):
+        return self.session.query(BlockchainTransaction).get(transaction_id)
+
+    def get_event(self, transaction_hash, event_name, args):
+        transaction = self.session.query(BlockchainTransaction).filter_by(hash=transaction_hash).first()
+        if not transaction:
+            return None
+
+        for event in transaction.events:
+            if event_name
     
     def get_transaction_signing_wallet(self, transaction_id):
 
