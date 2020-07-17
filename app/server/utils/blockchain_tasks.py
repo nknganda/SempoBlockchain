@@ -35,12 +35,23 @@ class BlockchainTasker(object):
             async_result.forget()
         return response
 
-    def _synchronous_call(self, contract_address, contract_type, func, args=None, signing_address=None, queue='high-priority'):
+    def _synchronous_call(
+            self,
+            contract_address,
+            contract_type,
+            func,
+            args=None,
+            kwargs=None,
+            signing_address=None,
+            queue='high-priority'
+    ):
+
         kwargs = {
             'contract_address': contract_address,
             'abi_type': contract_type,
             'function': func,
             'args': args,
+            'kwargs': kwargs,
             'signing_address': signing_address
         }
         return self._execute_synchronous_celery(self._eth_endpoint('call_contract_function'), kwargs, queue=queue)
@@ -48,24 +59,25 @@ class BlockchainTasker(object):
     def _transaction_task(self,
                           signing_address,
                           contract_address, contract_type,
-                          func, args=None,
+                          func, args=None, kwargs=None,
                           gas_limit=None,
                           prior_tasks=None,
                           queue=None,
                           task_uuid=None
                           ):
-        kwargs = {
+        task_kwargs = {
             'signing_address': signing_address,
             'contract_address': contract_address,
             'abi_type': contract_type,
             'function': func,
             'args': args,
+            'kwargs': kwargs,
             'gas_limit': gas_limit,
             'prior_tasks': prior_tasks
         }
         return task_runner.delay_task(
             self._eth_endpoint('transact_with_contract_function'),
-            kwargs=kwargs, queue=queue, task_uuid=task_uuid
+            kwargs=task_kwargs, queue=queue, task_uuid=task_uuid
         ).id
 
     def add_transaction_sync_filter(self, kwargs):
@@ -206,6 +218,8 @@ class BlockchainTasker(object):
                 contract_address=token.address,
                 contract_type='ERC20',
                 func='transfer',
+                # Warning: it's tempting to use kwargs here eg {'to': 0x123, 'value': 12}, but ITS_A_TRAP.JPG
+                # ERC20 contracts are annoyingly inconsistent on argument names - you'll get to, _to, src etc
                 args=[
                     to_address,
                     raw_amount
@@ -220,6 +234,7 @@ class BlockchainTasker(object):
             contract_address=token.address,
             contract_type='ERC20',
             func='transferFrom',
+            # Warning: see above warning. Same applies.
             args=[
                 from_address,
                 to_address,

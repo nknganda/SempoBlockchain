@@ -414,9 +414,20 @@ class SQLPersistenceInterface(object):
 
         return wallet
 
-    def create_external_transaction(self, status, block, hash, contract_address, is_synchronized_with_app, recipient_address, sender_address, amount):
+    def create_external_transaction(
+            self,
+            status,
+            block,
+            hash,
+            contract_address,
+            is_synchronized_with_app,
+            recipient_address,
+            sender_address,
+            amount
+    ):
+
         transaction_object = BlockchainTransaction(
-            _status = status,
+            _status =status,
             block = block,
             hash = hash,
             contract_address = contract_address,
