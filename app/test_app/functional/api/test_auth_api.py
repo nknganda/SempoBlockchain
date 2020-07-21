@@ -50,6 +50,12 @@ def test_invalid_activate_api(test_client, new_sempo_admin_user, activation_toke
     WHEN the '/api/auth/activate/' api is posted to (POST)
     THEN check the response is invalid when activation_token is incorrect or None
     """
+    from server import red
+
+    red.set('fff', b'hello')
+
+    assert red.get('fff') == b'hello'
+
     assert not new_sempo_admin_user.is_activated
     response = test_client.post('/api/v1/auth/activate/',
                                 data=json.dumps(dict(activation_token=activation_token)),

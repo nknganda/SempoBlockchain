@@ -16,7 +16,7 @@ if [ "$ret" -ne 0 ]; then
 fi
 
 if [ "$CONTAINER_MODE" == 'TEST' ]; then
-   coverage run -m pytest test_app -x -v -k test_red
+   coverage run -m pytest test_app -x -v
    ret=$?
    if [ "$ret" -ne 0 ]; then
      exit $ret
