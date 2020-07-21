@@ -151,12 +151,15 @@ BASIC_AUTH_CREDENTIALS = {
 }
 
 REDIS_URL = 'redis://' + config_parser['REDIS']['URI']
-import redis
-red = redis.Redis.from_url(REDIS_URL)
-red.set("foo", "bar")
-redfoo = red.get("foo")
-print(f"Redfoo is {redfoo}")
 
+try:
+    import redis
+    red = redis.Redis.from_url(REDIS_URL)
+    red.set("foo", "bar")
+    redfoo = red.get("foo")
+    print(f"Redfoo is {redfoo}")
+except ModuleNotFoundError:
+    pass
 
 DATABASE_USER = os.environ.get("DATABASE_USER") or secrets_parser['DATABASE'].get('user') \
                 or '{}_{}'.format(common_secrets_parser['DATABASE']['user'], DEPLOYMENT_NAME.replace("-", "_"))
