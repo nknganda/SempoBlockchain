@@ -41,12 +41,6 @@ services:
       CONTAINER_TYPE: "PRIMARY"
       PYTHONUNBUFFERED: 0
     image: "eth_worker:${IMAGE_TAG:-latest}"
-  eth_worker_processor:
-    environment:
-      <<: *CI_ENV
-      CONTAINER_TYPE: "PROCESSOR"
-      PYTHONUNBUFFERED: 0
-    image: "eth_worker:${IMAGE_TAG:-latest}"
   pgbouncer:
     environment:
       <<: *CI_ENV

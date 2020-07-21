@@ -28,19 +28,6 @@ services:
       - ganache
       - eth_postgres
 
-  eth_worker_processor:
-    build:
-      context: .
-      dockerfile: eth_worker/Dockerfile
-    image: "eth_worker:${IMAGE_TAG:-latest}"
-    environment:
-      CONTAINER_TYPE: "PROCESSOR"
-      PYTHONUNBUFFERED: 0
-    depends_on:
-      - redis
-      - ganache
-      - eth_postgres
-
   pgbouncer:
     build:
       context: .
@@ -77,56 +64,3 @@ services:
   ganache:
     image: "trufflesuite/ganache-cli:v6.7.0"
     command: "-l 80000000 -i 42"
-#  beat:
-#    build:
-#      context: app/server
-#      dockerfile: worker/Dockerfile
-#    image: worker
-#    environment:
-#      LOCATION: "LOCAL_DOCKER"
-#      CONTAINER_TYPE: "BEAT"
-#      PYTHONUNBUFFERED: 0
-#    env_file:
-#      - ~/ebkeys.env
-#    depends_on:
-#      - redis
-#  filter:
-#    build:
-#      context: app/server
-#      dockerfile: worker/Dockerfile
-#    image: worker
-#    environment:
-#      LOCATION: "LOCAL_DOCKER"
-#      CONTAINER_TYPE: "FILTER"
-#      PYTHONUNBUFFERED: 0
-#    env_file:
-#      - ~/ebkeys.env
-#    depends_on:
-#      - redis
-#  flower:
-#    build: flower
-#    environment:
-#      LOCATION: "LOCAL_DOCKER"
-#    env_file:
-#      - ~/ebkeys.env
-#    depends_on:
-#      - app
-#    volumes:
-#      - db-data:/var/lib/postgresql/data
-#    ports:
-#      - 5431:5432
-#    ports:
-#    - "6379:6379"
-#  whatsapp:
-#    build: ./whatsApp
-#    environment:
-#      LOCATION: "LOCAL_DOCKER"
-#      PYTHONUNBUFFERED: 0
-#    shm_size: 1g
-#    env_file:
-#     - ~/ebkeys.env
-#    volumes:
-#     - /tmp:/tmp
-#    depends_on:
-#    - redis
-
