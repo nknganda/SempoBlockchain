@@ -7,7 +7,7 @@ services:
     environment: &CI_ENV
       DEPLOYMENT_NAME: "DOCKER_TEST"
       CONTAINER_TYPE: "APP"
-      CONTAINER_MODE: ${CONTAINER_MODE} # TEST || ETH_WORKER_TEST depending on what is being tested
+      CONTAINER_MODE: "ETH_WORKER_TEST" # TEST || ETH_WORKER_TEST depending on what is being tested
       AWS_ACCESS_KEY_IDs: ${AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
       CODECOV_ENV: ${CODECOV_ENV}
