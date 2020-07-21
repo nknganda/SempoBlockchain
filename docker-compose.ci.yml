@@ -46,7 +46,7 @@ services:
       <<: *CI_ENV
       CONTAINER_TYPE: "PROCESSOR"
       PYTHONUNBUFFERED: 0
-    image: "eth_worker_process:${IMAGE_TAG:-latest}"
+    image: "eth_worker:${IMAGE_TAG:-latest}"
   pgbouncer:
     environment:
       <<: *CI_ENV
